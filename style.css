@@ -1,0 +1,312 @@
+:root {
+  --accent: #9491d4;
+  --bg: #000;
+}
+
+/* Регистрация угла для плавной анимации градиента */
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column; /* Выстраиваем элементы вертикально */
+  align-items: center;
+  justify-content: center;
+  gap: 14px; /* Компактный отступ между карточкой и плеером */
+  overflow: hidden;
+  font-family: Arial;
+  background: black;
+}
+
+/* ФОНОВАЯ КАРТИНКА */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("bg.jpg");
+  background-size: cover;
+  background-position: center;
+  filter: blur(6px) brightness(0.55);
+  transform: scale(1.05);
+  opacity: 0;
+  transition: 1.2s ease;
+  z-index: -2;
+}
+
+body.started::before {
+  opacity: 1;
+}
+
+/* ХОЛСТ С ЭФФЕКТАМИ */
+canvas {
+  position: fixed;
+  inset: 0;
+  z-index: -1; 
+  pointer-events: none !important;
+}
+
+/* СТАРТОВЫЙ ЭКРАН */
+#overlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  cursor: pointer;
+  transition: opacity .8s ease, visibility .8s ease;
+}
+
+#overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.hint {
+  color: white;
+  font-size: 13px;
+  letter-spacing: 2px;
+  opacity: 0.6;
+}
+
+/* ===================================================
+   ОСНОВНАЯ РАМКА (КАРТОЧКА) С ИДЕАЛЬНЫМ НЕОНОМ
+   =================================================== */
+.card {
+  position: relative;
+  z-index: 2;
+  width: 360px;
+  padding: 28px;
+  border-radius: 16px;
+  text-align: center;
+  
+  /* Фон карточки и матовое стекло */
+  background: rgba(15, 15, 20, 0.88);
+  backdrop-filter: blur(14px);
+  
+  /* Смягченное синхронизированное свечение */
+  box-shadow: 0 0 35px rgba(148, 145, 212, 0.25);
+}
+
+/* Умная анимированная рамка карточки (по часовой стрелке) */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 2px; /* Толщина светящейся линии */
+  background: conic-gradient(from var(--angle), transparent 50%, var(--accent) 90%, transparent 100%);
+  
+  /* Магия: вырезаем центр, оставляя только область padding (2px) */
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          
+  pointer-events: none;
+  animation: rotateBorder 2.5s linear infinite;
+}
+
+.name {
+  font-size: 34px;
+  font-weight: bold;
+  background: linear-gradient(90deg, #fff, var(--accent), #fff);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 4s linear infinite;
+}
+
+@keyframes shine {
+  100% { background-position: 200%; }
+}
+
+.links {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.btn {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #ddd;
+  font-size: 20px;
+  text-decoration: none;
+  transition: 0.2s;
+}
+
+.btn:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 4px 12px rgba(148, 145, 212, 0.2);
+}
+
+.visitsBox {
+  margin-top: 18px;
+  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  transition: 0.2s;
+}
+
+.visitsBox:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+/* ===================================================
+   ПЛЕЕР С НЕОНОМ (ПРОТИВ ЧАСОВОЙ СТРЕЛКИ)
+   =================================================== */
+.player {
+  position: relative; /* Встраиваем в flex-поток вместо фиксированного низа */
+  width: 360px;
+  max-width: 90vw;
+  padding: 18px;
+  border-radius: 16px;
+  
+  /* Тот же цвет фонда и матовое стекло, что и у карточки */
+  background: rgba(15, 15, 20, 0.88);
+  backdrop-filter: blur(14px);
+  
+  color: white;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 10;
+  
+  /* Смягченное синхронизированное свечение */
+  box-shadow: 0 0 35px rgba(148, 145, 212, 0.25);
+}
+
+/* Умная анимированная рамка плеера (против часовой стрелки) */
+.player::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 2px; /* Толщина светящейся линии */
+  background: conic-gradient(from var(--angle), transparent 50%, var(--accent) 90%, transparent 100%);
+  
+  /* Точно так же вырезаем центр плеера */
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          
+  pointer-events: none;
+  /* Запуск обратной анимации */
+  animation: rotateBorderReverse 2.5s linear infinite;
+}
+
+.trackName {
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.progressWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#seek {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.timeRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.playerControls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.volWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 140px;
+}
+
+#volume {
+  cursor: pointer;
+  accent-color: var(--accent);
+  width: 100%;
+}
+
+#volPercent {
+  min-width: 40px;
+  text-align: right;
+  opacity: 0.7;
+}
+
+.rightControls {
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+  z-index: 11;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button:hover {
+  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ===================================================
+   АНИМАЦИИ ВРАЩЕНИЯ СВЕЧЕНИЯ
+   =================================================== */
+/* По часовой стрелке (для карточки) */
+@keyframes rotateBorder {
+  to {
+    --angle: 360deg;
+  }
+}
+
+/* Против часовой стрелки (для плеера) */
+@keyframes rotateBorderReverse {
+  to {
+    --angle: -360deg;
+  }
+}
